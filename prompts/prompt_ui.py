@@ -1,17 +1,51 @@
 from langchain_openai import ChatOpenAI
 from dotenv import load_dotenv
 import streamlit as st
+from langchain_core.prompts import PromptTemplate, load_prompt
 
 load_dotenv()
 
-model = ChatOpenAI(model = 'gpt-3.5',temperature = 1.5 , max_completion_tokens = 200)
+model = ChatOpenAI(model='gpt-4', temperature=1.5, max_completion_tokens=500)
 
 st.header('Research Tool')
 
-user_input = st.text_input(
-    'Enter your prompt'
+paper_input = st.selectbox(
+    "Select Research Paper Name",
+    [
+        "Attention Is All You Need",
+        "BERT: Pre-training of Deep Bidirectional Transformers",
+        "GPT-3: Language models are Few-Short Learners",
+        "Diffusion models Beat GANs on Image Synthesis"
+    ]
 )
 
-if st.button('Summerize'):
-    result = model.invoke(user_input)
+style_input = st.selectbox(
+    "Select Explanation Style",
+    [
+        "Beginner-Freindly",
+        "Technical",
+        "Code-Oriented",
+        "Mathematical"
+    ]
+)
+
+length_input = st.selectbox(
+    "Select Explanation Length",
+    [
+        "Short (1-2 paragraphs)",
+        "Medium(3-5 paragraphs)",
+        "Long(detailed explanation)"
+    ]
+)
+
+template = load_prompt('template.json')
+
+
+if st.button("Summerize"):
+    chain = template | model
+    result = chain.invoke({
+        'paper_input': paper_input,
+        'style_input': style_input,
+        'length_input': length_input
+    })
     st.write(result.content)
